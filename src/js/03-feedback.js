@@ -1,46 +1,31 @@
 import throttle from 'lodash.throttle';
-const STORAGE_KEY = 'feedback-form-state';
+
+const form = document.querySelector('.feedback-form');
+form.addEventListener('input', throttle(onFormData, 500));
+form.addEventListener('submit', onSubmitForm);
 
 const formData = {};
-const refs = {
-form: document.querySelector(".feedback-form"),
-textarea: document.querySelector(".feedback-form textarea"),
-input: document.querySelector(".feedback-form input")
+
+function onFormData(e) {
+  formData[e.target.name] = e.target.value;
+  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
 }
 
-refs.form.addEventListener('submit', onFormSubmit);
-refs.form.addEventListener('input', throttle(onTextareaInput, 500 ));
-
-populateTextarea();
-
-
-function onTextareaInput(event){
-  formData[event.target.name] = event.target.value;
-console.log(formData);
-// const dataOfKey = JSON.stringify(formData);
-localStorage.setItem("STORAGE_KEY",JSON.stringify(formData));  
+function onSubmitForm(e) {
+  console.log(JSON.parse(localStorage.getItem('feedback-form-state')));
+  e.preventDefault();
+  e.currentTarget.reset();
+  localStorage.removeItem('feedback-form-state');
 }
 
-function onFormSubmit(event){
-    event.preventDefault();
-    console.log('Sending form');
-    const dataAfterSubmit = localStorage.getItem("STORAGE_KEY");
-    console.log(JSON.parse(dataAfterSubmit));
-    // console.log(dataAfterSubmit);
-    event.currentTarget.reset();
-    localStorage.removeItem("STORAGE_KEY");
-}
+(function dataFromLocalStorage() {
+  const data = JSON.parse(localStorage.getItem('feedback-form-state'));
+  const email = document.querySelector('.feedback-form input');
+  const message = document.querySelector('.feedback-form textarea');
+  if (data) {
+    email.value = data.email;
+    message.value = data.message;
+  }
+})();
 
-
-function populateTextarea(){
-    const savedMessage = localStorage.getItem("STORAGE_KEY");
-    const savedMessageParsed = JSON.parse(savedMessage);
-    
-    if (savedMessageParsed){
-        const formDat = savedMessageParsed;
-        // console.log(formD);
-        refs.textarea.value = formDat.message || "";
-        refs.input.value = formDat.email || "";
-  
-    }}
 
